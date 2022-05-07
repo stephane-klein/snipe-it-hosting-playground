@@ -1,0 +1,72 @@
+version: '3.8'
+services:
+  snipeit:
+    image: snipe/snipe-it:v5.4.4
+    ports:
+      - 8000:80
+    depends_on:
+      - mariadb
+      - redis
+      - mailhog
+    environment:
+      APP_ENV: production
+      APP_DEBUG: false
+      # please regenerate the APP_KEY value by calling `docker-compose run --rm snipeit bash` and then `php artisan key:generate --show` and then copy paste the value here
+      APP_KEY: base64:3ilviXqB9u6DX1NRcyWGJ+sjySF+H18CPDGb3+IVwMQ:=
+      APP_URL: http://localhost:8000
+      APP_TIMEZONE: 'UTC'
+      APP_LOCALE: en
+      MAX_RESULTS: 500
+      PRIVATE_FILESYSTEM_DISK: local
+      PUBLIC_FILESYSTEM_DISK: local_public
+      DB_CONNECTION: mysql
+      DB_HOST: mariadb
+      DB_DATABASE: snipeit
+      DB_USERNAME: snipeit
+      DB_PASSWORD: changeme1234
+      DB_PREFIX: null
+      DB_DUMP_PATH: '/usr/bin'
+      DB_CHARSET: utf8mb4
+      DB_COLLATION: utf8mb4_unicode_ci
+      MAIL_DRIVER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: null
+      MAIL_PASSWORD: null
+      MAIL_ENCRYPTION: null
+      MAIL_FROM_ADDR: you@example.com
+      MAIL_FROM_NAME: 'Snipe-IT'
+      MAIL_REPLYTO_ADDR: you@example.com
+      MAIL_REPLYTO_NAME: 'Snipe-IT'
+      MAIL_AUTO_EMBED_METHOD: 'attachment'
+      IMAGE_LIB: gd
+      REDIS_HOST: redis
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
+
+  mariadb:
+    image: mariadb:10.7
+    volumes:
+      - ./volumes/mariadb/:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: snipeit
+      MYSQL_USER: snipeit
+      MYSQL_PASSWORD: changeme1234
+      MYSQL_ROOT_PASSWORD: changeme1234
+    healthcheck:
+      test: "/usr/bin/mysql --user=snipeit --password=changeme1234 --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 5
+
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      start_period: 30s
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+    - 8025:8025
